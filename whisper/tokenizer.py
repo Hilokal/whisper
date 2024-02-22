@@ -165,6 +165,10 @@ class Tokenizer:
         token_ids = [t for t in token_ids if t < self.timestamp_begin]
         return self.encoding.decode(token_ids, **kwargs)
 
+    def decode_with_offsets(self, token_ids: List[int], **kwargs) -> str:
+        token_ids = [t for t in token_ids if t < self.timestamp_begin]
+        return self.encoding.decode_with_offsets(token_ids, **kwargs)
+
     def decode_with_timestamps(self, token_ids: List[int], **kwargs) -> str:
         """
         Timestamp tokens are above other special tokens' id range and are ignored by `decode()`.

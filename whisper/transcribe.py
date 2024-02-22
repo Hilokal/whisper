@@ -234,16 +234,21 @@ def transcribe(
         initial_prompt_tokens = []
 
     def new_segment(
-        *, start: float, end: float, tokens: torch.Tensor, result: DecodingResult
+        *, start: float, end: float, tokens: torch.Tensor, logprobs: torch.Tensor, logits: torch.Tensor, result: DecodingResult
     ):
         tokens = tokens.tolist()
+        text, offsets = tokenizer.decode_with_offsets(tokens)
         text_tokens = [token for token in tokens if token < tokenizer.eot]
         return {
             "seek": seek,
             "start": start,
             "end": end,
-            "text": tokenizer.decode(text_tokens),
+            "text": text,
+            "offsets": offsets,
             "tokens": tokens,
+            "offsets": offsets,
+            "logprobs": logprobs,
+            "logits": logits,
             "temperature": result.temperature,
             "avg_logprob": result.avg_logprob,
             "compression_ratio": result.compression_ratio,
@@ -334,6 +339,8 @@ def transcribe(
                 last_slice = 0
                 for current_slice in slices:
                     sliced_tokens = tokens[last_slice:current_slice]
+                    sliced_logprobs = result.logprobs[last_slice:current_slice]
+                    sliced_logits = result.logits[last_slice:current_slice]
                     start_timestamp_pos = (
                         sliced_tokens[0].item() - tokenizer.timestamp_begin
                     )
@@ -345,6 +352,8 @@ def transcribe(
                             start=time_offset + start_timestamp_pos * time_precision,
                             end=time_offset + end_timestamp_pos * time_precision,
                             tokens=sliced_tokens,
+                            logprobs=sliced_logprobs,
+                            logits=sliced_logits,
                             result=result,
                         )
                     )
@@ -377,6 +386,8 @@ def transcribe(
                         start=time_offset,
                         end=time_offset + duration,
                         tokens=tokens,
+                        logprobs=result.logprobs,
+                        logits=result.logits,
                         result=result,
                     )
                 )
