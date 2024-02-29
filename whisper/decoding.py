@@ -745,8 +745,8 @@ class DecodingTask:
         # repeat text tensors by the group size, for beam search or best-of-n sampling
         tokens = tokens.repeat_interleave(self.n_group, dim=0).to(audio_features.device)
 
-        logprobs = torch.zeros((tokens.shape[0], 0))
-        logits = torch.zeros((tokens.shape[0], 0))
+        logprobs = torch.zeros((tokens.shape[0], 0), device=audio_features.device)
+        logits = torch.zeros((tokens.shape[0], 0), device=audio_features.device)
 
         # call the main sampling loop
         tokens, sum_logprobs, no_speech_probs, logprobs, logits = self._main_loop(audio_features, tokens, logprobs, logits)
